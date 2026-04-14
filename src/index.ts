@@ -197,30 +197,37 @@ program
 
 program
   .command('listen')
-  .description('Create a webhook.site URL, register it, and poll for new emails')
+  .description('Create or use an existing webhook.site URL, register it (if new), and poll for new emails')
   .option('-i, --interval <seconds>', 'Polling interval in seconds', '10')
   .option('-n, --name <name>', 'Name for the webhook endpoint', 'CLI Listener')
+  .option('-t, --token <id>', 'Existing webhook.site token ID to listen to')
   .option('--description <description>', 'Description for this endpoint')
   .action(async (options) => {
     try {
       const intervalMs = parseInt(options.interval) * 1000;
+      let tokenId = options.token;
+      let webhookUrl = '';
+
+      if (!tokenId) {
+        p.log.info('Creating webhook.site token...');
+        const tokenData = await whApi.createToken();
+        tokenId = tokenData.uuid;
+        webhookUrl = `https://webhook.site/${tokenId}`;
+        p.log.success(`Webhook URL created: ${webhookUrl}`);
+
+        p.log.info(`Registering webhook with Inbound...`);
+        await api.createEndpoint({
+          name: options.name,
+          type: 'webhook',
+          config: { url: webhookUrl },
+          description: options.description,
+        });
+        p.log.success('Webhook registered with Inbound.');
+      } else {
+        p.log.info(`Using existing webhook.site token: ${tokenId}`);
+        webhookUrl = `https://webhook.site/${tokenId}`;
+      }
       
-      p.log.info('Creating webhook.site token...');
-      const tokenData = await whApi.createToken();
-      const tokenId = tokenData.uuid;
-      const webhookUrl = `https://webhook.site/${tokenId}`;
-      
-      p.log.success(`Webhook URL created: ${webhookUrl}`);
-      p.log.info(`Registering webhook with Inbound...`);
-      
-      await api.createEndpoint({
-        name: options.name,
-        type: 'webhook',
-        config: { url: webhookUrl },
-        description: options.description,
-      });
-      
-      p.log.success('Webhook registered with Inbound.');
       p.log.info(`Listening for emails (polling every ${options.interval}s). Press Ctrl+C to stop.\n`);
 
       let lastSeenId: string | null = null;
