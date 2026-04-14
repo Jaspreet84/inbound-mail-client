@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
-import { InboundAPI } from './api.js';
+import { InboundAPI, WebhookSiteAPI } from './api.js';
 import * as p from '@clack/prompts';
 import fs from 'fs';
 import path from 'path';
 
 const program = new Command();
 const api = new InboundAPI();
+const whApi = new WebhookSiteAPI();
 
 program
   .name('inbound')
@@ -186,6 +187,77 @@ program
     try {
       const response = await api.getEmail(id);
       p.note(JSON.stringify(response, null, 2), 'Email Details');
+    } catch (err: any) {
+      p.log.error(err.message);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('listen')
+  .description('Create a webhook.site URL, register it, and poll for new emails')
+  .option('-i, --interval <seconds>', 'Polling interval in seconds', '10')
+  .option('--filter <filter>', 'Filter rule for Inbound endpoint')
+  .action(async (options) => {
+    try {
+      const intervalMs = parseInt(options.interval) * 1000;
+      
+      p.log.info('Creating webhook.site token...');
+      const tokenData = await whApi.createToken();
+      const tokenId = tokenData.uuid;
+      const webhookUrl = `https://webhook.site/${tokenId}`;
+      
+      p.log.success(`Webhook URL created: ${webhookUrl}`);
+      p.log.info(`Registering webhook with Inbound...`);
+      
+      await api.createEndpoint({
+        type: 'webhook',
+        config: { url: webhookUrl },
+        filter: options.filter,
+      });
+      
+      p.log.success('Webhook registered with Inbound.');
+      p.log.info(`Listening for emails (polling every ${options.interval}s). Press Ctrl+C to stop.\n`);
+
+      let lastSeenId: string | null = null;
+
+      const poll = async () => {
+        try {
+          const result = await whApi.getRequests(tokenId);
+          const requests = result.data || [];
+          
+          if (requests.length > 0) {
+            const newRequests = [];
+            for (const req of requests) {
+              if (req.uuid === lastSeenId) break;
+              newRequests.push(req);
+            }
+            
+            if (newRequests.length > 0) {
+              lastSeenId = requests[0].uuid;
+              // Reverse to show oldest new request first
+              for (const req of newRequests.reverse()) {
+                try {
+                  const payload = JSON.parse(req.content);
+                  p.note(JSON.stringify(payload, null, 2), `New Email Received: ${payload.subject || 'No Subject'}`);
+                } catch (e) {
+                  p.log.warn('Received request body that was not valid JSON.');
+                  p.log.info(req.content);
+                }
+              }
+            }
+          }
+        } catch (err: any) {
+          p.log.error(`Polling error: ${err.message}`);
+        }
+      };
+
+      setInterval(poll, intervalMs);
+      await poll(); // Initial poll
+      
+      // Keep process alive
+      await new Promise(() => {});
+
     } catch (err: any) {
       p.log.error(err.message);
       process.exit(1);

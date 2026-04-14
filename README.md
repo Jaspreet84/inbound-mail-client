@@ -82,6 +82,7 @@ inbound webhook --url "https://your-api.com/webhook" --filter "subject: urgent"
 | `reply` | Reply to an existing email thread. |
 | `download` | Download a specific attachment from an email. |
 | `webhook` | Configure a new webhook endpoint. |
+| `listen` | Auto-create a webhook.site, register it, and poll for emails. |
 
 ## Development
 

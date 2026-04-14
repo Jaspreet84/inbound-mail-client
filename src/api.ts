@@ -118,3 +118,19 @@ export class InboundAPI {
     return response.data;
   }
 }
+
+export class WebhookSiteAPI {
+  private baseUrl = 'https://webhook.site';
+
+  async createToken() {
+    const response = await axios.post(`${this.baseUrl}/token`);
+    return response.data; // { uuid: '...', ... }
+  }
+
+  async getRequests(tokenId: string) {
+    const response = await axios.get(`${this.baseUrl}/token/${tokenId}/requests`, {
+      params: { sorting: 'newest' }
+    });
+    return response.data; // { data: [...], ... }
+  }
+}

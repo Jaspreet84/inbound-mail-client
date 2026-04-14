@@ -37,6 +37,12 @@ Use the `send` command for new outbound messages.
 ### 4. Replying
 - **Threading**: `inbound reply <id> -f <from> --text <text>`. This maintains the `thread_id` context automatically.
 
+### 5. Automated Listening (Webhook.site)
+- **Listen**: `inbound listen -i <seconds> --filter <filter>`. This command:
+  1. Creates a new unique `webhook.site` URL.
+  2. Registers it as an endpoint with Inbound.
+  3. Polls `webhook.site` for incoming email payloads.
+
 ## Operational Rules & Validation
 
 Based on workspace conventions, agents must adhere to the following validation logic before execution:
