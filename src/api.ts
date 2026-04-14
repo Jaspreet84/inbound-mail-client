@@ -66,6 +66,7 @@ export class InboundAPI {
   }
 
   async createEndpoint(data: { 
+    name: string;
     type: 'webhook';
     config: {
       url: string;
@@ -73,7 +74,7 @@ export class InboundAPI {
       retryAttempts?: number;
       headers?: Record<string, string>;
     };
-    filter?: string;
+    description?: string;
   }) {
     const response = await axios.post(`${API_BASE_URL}/api/e2/endpoints`, data, {
       headers: { Authorization: `Bearer ${this.apiKey}` },

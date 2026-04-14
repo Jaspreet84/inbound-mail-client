@@ -119,16 +119,18 @@ program
 program
   .command('webhook')
   .description('Create a webhook endpoint')
+  .requiredOption('-n, --name <name>', 'Endpoint name')
   .requiredOption('-u, --url <url>', 'Webhook URL')
-  .option('--filter <filter>', 'Filter rule for this endpoint')
+  .option('--description <description>', 'Description for this endpoint')
   .action(async (options) => {
     try {
       const response = await api.createEndpoint({
+        name: options.name,
         type: 'webhook',
         config: {
           url: options.url,
         },
-        filter: options.filter,
+        description: options.description,
       });
       p.note(JSON.stringify(response, null, 2), 'Webhook Endpoint Created');
     } catch (err: any) {
@@ -197,7 +199,8 @@ program
   .command('listen')
   .description('Create a webhook.site URL, register it, and poll for new emails')
   .option('-i, --interval <seconds>', 'Polling interval in seconds', '10')
-  .option('--filter <filter>', 'Filter rule for Inbound endpoint')
+  .option('-n, --name <name>', 'Name for the webhook endpoint', 'CLI Listener')
+  .option('--description <description>', 'Description for this endpoint')
   .action(async (options) => {
     try {
       const intervalMs = parseInt(options.interval) * 1000;
@@ -211,9 +214,10 @@ program
       p.log.info(`Registering webhook with Inbound...`);
       
       await api.createEndpoint({
+        name: options.name,
         type: 'webhook',
         config: { url: webhookUrl },
-        filter: options.filter,
+        description: options.description,
       });
       
       p.log.success('Webhook registered with Inbound.');
