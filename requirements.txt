@@ -1,0 +1,8 @@
+@clack/prompts@^1.2.0
+axios@^1.8.0
+commander@^14.0.0
+hpagent@^1.2.0
+@types/node@^25.0.0
+tsx@^4.0.0
+typescript@^6.0.0
+vitest@^4.0.0
