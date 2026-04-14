@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { Command } from 'commander';
-import { InboundAPI, WebhookSiteAPI } from './api.js';
+import { Command, Option } from 'commander';
+import { InboundAPI, WebhookSiteAPI, setVerbose } from './api.js';
 import * as p from '@clack/prompts';
 import fs from 'fs';
 import path from 'path';
@@ -12,7 +12,11 @@ const whApi = new WebhookSiteAPI();
 program
   .name('inbound')
   .description('AI-first tool for sending and receiving emails')
-  .version('1.0.0');
+  .version('1.0.0')
+  .option('-v, --verbose', 'Verbose output (for debugging API calls)')
+  .on('option:verbose', () => {
+    setVerbose(true);
+  });
 
 program
   .command('send')

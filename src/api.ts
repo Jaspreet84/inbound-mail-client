@@ -25,6 +25,42 @@ const axiosInstance = axios.create({
   proxy: getProxyConfig()
 });
 
+let isVerbose = false;
+export function setVerbose(v: boolean) {
+  isVerbose = v;
+}
+
+axiosInstance.interceptors.request.use(config => {
+  if (isVerbose) {
+    console.log(`\x1b[36m[DEBUG] Request: ${config.method?.toUpperCase()} ${config.url}\x1b[0m`);
+    if (config.headers.Authorization) {
+      console.log(`\x1b[36m[DEBUG] Auth: Bearer ${config.headers.Authorization.toString().substring(0, 15)}...\x1b[0m`);
+    }
+  }
+  return config;
+});
+
+axiosInstance.interceptors.response.use(
+  response => {
+    if (isVerbose) {
+      console.log(`\x1b[32m[DEBUG] Response: ${response.status} ${response.config.url}\x1b[0m`);
+    }
+    return response;
+  },
+  error => {
+    if (isVerbose) {
+      if (error.response) {
+        console.log(`\x1b[31m[DEBUG] Error Response: ${error.response.status} ${error.config.url}\x1b[0m`);
+        console.log(`\x1b[31m[DEBUG] Data: ${JSON.stringify(error.response.data)}\x1b[0m`);
+      } else if (error.request) {
+        console.log(`\x1b[31m[DEBUG] No Response from: ${error.config.url}\x1b[0m`);
+        console.log(`\x1b[31m[DEBUG] Error: ${error.message}\x1b[0m`);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export class InboundAPI {
   private apiKey: string;
 
