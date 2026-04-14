@@ -1,5 +1,6 @@
-import axios, { AxiosInstance, AxiosProxyConfig, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { URL } from 'url';
+import { HttpProxyAgent, HttpsProxyAgent } from 'hpagent';
 
 let isVerbose = process.env.VERBOSE === 'true';
 export function setVerbose(v: boolean) {
@@ -11,42 +12,34 @@ export function setUseProxy(v: boolean) {
   useProxy = v;
 }
 
-function getProxyConfig(): AxiosProxyConfig | false {
-  if (!useProxy) return false;
-  const proxyUrl = process.env.https_proxy || process.env.HTTPS_PROXY || process.env.http_proxy || process.env.HTTP_PROXY;
-  if (!proxyUrl) return false;
-
-  try {
-    const parsed = new URL(proxyUrl);
-    return {
-      protocol: parsed.protocol.replace(':', ''),
-      host: parsed.hostname,
-      port: parsed.port ? parseInt(parsed.port) : (parsed.protocol === 'https:' ? 443 : 80),
-      auth: parsed.username ? {
-        username: parsed.username,
-        password: parsed.password
-      } : undefined
-    };
-  } catch (e) {
-    return false;
-  }
+function getProxyUrl(): string | undefined {
+  if (!useProxy) return undefined;
+  return process.env.https_proxy || process.env.HTTPS_PROXY || process.env.http_proxy || process.env.HTTP_PROXY;
 }
 
 export const createClient = (baseURL: string): AxiosInstance => {
+  const proxyUrl = getProxyUrl();
+  
+  // Use hpagent for robust CONNECT tunneling
+  const httpAgent = proxyUrl ? new HttpProxyAgent({ proxy: proxyUrl, keepAlive: true }) : undefined;
+  const httpsAgent = proxyUrl ? new HttpsProxyAgent({ proxy: proxyUrl, keepAlive: true }) : undefined;
+
   const instance = axios.create({
     baseURL,
     maxRedirects: 0,
+    httpAgent,
+    httpsAgent,
+    proxy: false, // Explicitly disable axios built-in proxy to use the agents
     headers: {
       'User-Agent': 'InboundCLI/1.0.0 (Node.js)'
     }
   });
 
   instance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-    config.proxy = getProxyConfig();
     if (isVerbose) {
       console.log(`\x1b[36m[DEBUG] Request: ${config.method?.toUpperCase()} ${config.url}\x1b[0m`);
-      if (config.proxy) {
-        console.log(`\x1b[36m[DEBUG] Using Proxy: ${config.proxy.host}:${config.proxy.port}\x1b[0m`);
+      if (proxyUrl) {
+        console.log(`\x1b[36m[DEBUG] Using Proxy Agent: ${proxyUrl}\x1b[0m`);
       }
       console.log(`\x1b[36m[DEBUG] Request Headers: ${JSON.stringify(config.headers, null, 2)}\x1b[0m`);
     }
