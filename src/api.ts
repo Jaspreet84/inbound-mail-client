@@ -5,38 +5,52 @@ import { URL } from 'url';
 
 const API_BASE_URL = 'https://inbound.new/api/e2/';
 
-function getProxyConfig(): AxiosProxyConfig | false {
-  const proxyUrl = process.env.https_proxy || process.env.HTTPS_PROXY || process.env.http_proxy || process.env.HTTP_PROXY;
-  if (!proxyUrl) return false;
-
-  const parsed = new URL(proxyUrl);
-  return {
-    protocol: parsed.protocol.replace(':', ''),
-    host: parsed.hostname,
-    port: parseInt(parsed.port),
-    auth: parsed.username ? {
-      username: parsed.username,
-      password: parsed.password
-    } : undefined
-  };
-}
-
-const axiosInstance = axios.create({
-  proxy: getProxyConfig(),
-  maxRedirects: 20,
-  headers: {
-    'User-Agent': 'Mozilla/5.0 (Node.js)'
-  }
-});
-
 let isVerbose = process.env.VERBOSE === 'true';
 export function setVerbose(v: boolean) {
   isVerbose = v;
 }
 
+let useProxy = process.env.NO_PROXY !== 'true';
+export function setUseProxy(v: boolean) {
+  useProxy = v;
+}
+
+function getProxyConfig(): AxiosProxyConfig | false {
+  if (!useProxy) return false;
+  const proxyUrl = process.env.https_proxy || process.env.HTTPS_PROXY || process.env.http_proxy || process.env.HTTP_PROXY;
+  if (!proxyUrl) return false;
+
+  try {
+    const parsed = new URL(proxyUrl);
+    return {
+      protocol: parsed.protocol.replace(':', ''),
+      host: parsed.hostname,
+      port: parsed.port ? parseInt(parsed.port) : (parsed.protocol === 'https:' ? 443 : 80),
+      auth: parsed.username ? {
+        username: parsed.username,
+        password: parsed.password
+      } : undefined
+    };
+  } catch (e) {
+    return false;
+  }
+}
+
+const axiosInstance = axios.create({
+  maxRedirects: 0, // Disable auto-follow to catch loops
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (Node.js)'
+  }
+});
+
+// Update instance config dynamically
 axiosInstance.interceptors.request.use(config => {
+  config.proxy = getProxyConfig();
   if (isVerbose) {
     console.log(`\x1b[36m[DEBUG] Request: ${config.method?.toUpperCase()} ${config.url}\x1b[0m`);
+    if (config.proxy) {
+      console.log(`\x1b[36m[DEBUG] Using Proxy: ${config.proxy.host}:${config.proxy.port}\x1b[0m`);
+    }
     if (config.headers.Authorization) {
       const auth = config.headers.Authorization.toString();
       console.log(`\x1b[36m[DEBUG] Auth Header: ${auth.substring(0, 20)}...\x1b[0m`);

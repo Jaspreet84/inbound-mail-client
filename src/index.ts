@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { Command, Option } from 'commander';
-import { InboundAPI, WebhookSiteAPI, setVerbose } from './api.js';
+import { InboundAPI, WebhookSiteAPI, setVerbose, setUseProxy } from './api.js';
 import * as p from '@clack/prompts';
 import fs from 'fs';
 import path from 'path';
@@ -14,8 +14,12 @@ program
   .description('AI-first tool for sending and receiving emails')
   .version('1.0.0')
   .option('-v, --verbose', 'Verbose output (for debugging API calls)')
+  .option('--no-proxy', 'Disable using system proxy environment variables')
   .on('option:verbose', () => {
     setVerbose(true);
+  })
+  .on('option:no-proxy', () => {
+    setUseProxy(false);
   });
 
 program
