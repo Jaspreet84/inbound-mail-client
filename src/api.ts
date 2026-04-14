@@ -2,7 +2,7 @@ import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 
-const API_BASE_URL = 'https://inbound.new';
+const API_BASE_URL = 'https://api.inbound.new/v2';
 
 export class InboundAPI {
   private apiKey: string;
@@ -35,7 +35,7 @@ export class InboundAPI {
     scheduled_at?: string;
     tags?: Array<{ name: string; value: string }>;
   }) {
-    const response = await axios.post(`${API_BASE_URL}/api/e2/emails`, data, {
+    const response = await axios.post(`${API_BASE_URL}/emails`, data, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
     });
     return response.data;
@@ -51,14 +51,14 @@ export class InboundAPI {
     reply_all?: boolean;
     tags?: Array<{ name: string; value: string }>;
   }) {
-    const response = await axios.post(`${API_BASE_URL}/api/e2/emails/${id}/reply`, data, {
+    const response = await axios.post(`${API_BASE_URL}/emails/${id}/reply`, data, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
     });
     return response.data;
   }
 
   async downloadAttachment(id: string, filename: string) {
-    const response = await axios.get(`${API_BASE_URL}/api/e2/attachments/${id}/${filename}`, {
+    const response = await axios.get(`${API_BASE_URL}/attachments/${id}/${filename}`, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
       responseType: 'arraybuffer',
     });
@@ -76,7 +76,7 @@ export class InboundAPI {
     };
     description?: string;
   }) {
-    const response = await axios.post(`${API_BASE_URL}/api/e2/endpoints`, data, {
+    const response = await axios.post(`${API_BASE_URL}/endpoints`, data, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
     });
     return response.data;
@@ -91,7 +91,7 @@ export class InboundAPI {
     limit?: number;
     offset?: number;
   }) {
-    const response = await axios.get(`${API_BASE_URL}/api/e2/emails`, {
+    const response = await axios.get(`${API_BASE_URL}/emails`, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
       params,
     });
@@ -105,7 +105,7 @@ export class InboundAPI {
     search?: string;
     unread?: boolean;
   }) {
-    const response = await axios.get(`${API_BASE_URL}/api/e2/mail/threads`, {
+    const response = await axios.get(`${API_BASE_URL}/mail/threads`, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
       params,
     });
@@ -113,28 +113,28 @@ export class InboundAPI {
   }
 
   async getEmail(id: string) {
-    const response = await axios.get(`${API_BASE_URL}/api/e2/emails/${id}`, {
+    const response = await axios.get(`${API_BASE_URL}/emails/${id}`, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
     });
     return response.data;
   }
 
   async listEmailAddresses() {
-    const response = await axios.get(`${API_BASE_URL}/api/e2/email-addresses`, {
+    const response = await axios.get(`${API_BASE_URL}/email-addresses`, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
     });
     return response.data;
   }
 
   async updateEmailAddress(id: string, data: { endpointId?: string | null; webhookId?: string | null; isActive?: boolean }) {
-    const response = await axios.put(`${API_BASE_URL}/api/e2/email-addresses/${id}`, data, {
+    const response = await axios.put(`${API_BASE_URL}/email-addresses/${id}`, data, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
     });
     return response.data;
   }
 
   async getEndpoint(id: string) {
-    const response = await axios.get(`${API_BASE_URL}/api/e2/endpoints/${id}`, {
+    const response = await axios.get(`${API_BASE_URL}/endpoints/${id}`, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
     });
     return response.data;
