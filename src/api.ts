@@ -23,7 +23,10 @@ function getProxyConfig(): AxiosProxyConfig | false {
 
 const axiosInstance = axios.create({
   proxy: getProxyConfig(),
-  maxRedirects: 10
+  maxRedirects: 20,
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (Node.js)'
+  }
 });
 
 let isVerbose = process.env.VERBOSE === 'true';
@@ -35,7 +38,8 @@ axiosInstance.interceptors.request.use(config => {
   if (isVerbose) {
     console.log(`\x1b[36m[DEBUG] Request: ${config.method?.toUpperCase()} ${config.url}\x1b[0m`);
     if (config.headers.Authorization) {
-      console.log(`\x1b[36m[DEBUG] Auth: Bearer ${config.headers.Authorization.toString().substring(0, 15)}...\x1b[0m`);
+      const auth = config.headers.Authorization.toString();
+      console.log(`\x1b[36m[DEBUG] Auth Header: ${auth.substring(0, 20)}...\x1b[0m`);
     }
   }
   return config;
@@ -52,7 +56,11 @@ axiosInstance.interceptors.response.use(
     if (isVerbose) {
       if (error.response) {
         console.log(`\x1b[31m[DEBUG] Error Response: ${error.response.status} ${error.config.url}\x1b[0m`);
+        if (error.response.headers.location) {
+          console.log(`\x1b[33m[DEBUG] Redirect Location: ${error.response.headers.location}\x1b[0m`);
+        }
         console.log(`\x1b[31m[DEBUG] Data: ${JSON.stringify(error.response.data)}\x1b[0m`);
+        console.log(`\x1b[31m[DEBUG] Headers: ${JSON.stringify(error.response.headers)}\x1b[0m`);
       } else if (error.request) {
         console.log(`\x1b[31m[DEBUG] No Response from: ${error.config.url}\x1b[0m`);
         console.log(`\x1b[31m[DEBUG] Error: ${error.message}\x1b[0m`);
