@@ -132,6 +132,13 @@ export class InboundAPI {
     });
     return response.data;
   }
+
+  async getEndpoint(id: string) {
+    const response = await axios.get(`${API_BASE_URL}/api/e2/endpoints/${id}`, {
+      headers: { Authorization: `Bearer ${this.apiKey}` },
+    });
+    return response.data;
+  }
 }
 
 export class WebhookSiteAPI {

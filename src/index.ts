@@ -211,6 +211,7 @@ program
       let endpointId = '';
       let addressId: string | null = null;
       let originalRouting: { endpointId?: string | null; webhookId?: string | null } = {};
+      let isExistingEndpoint = false;
 
       if (options.address) {
         p.log.info(`Finding ID for address: ${options.address}...`);
@@ -224,6 +225,24 @@ program
           endpointId: addressObj.routing?.id && addressObj.routing?.type === 'endpoint' ? addressObj.routing.id : null,
           webhookId: addressObj.routing?.id && addressObj.routing?.type === 'webhook' ? addressObj.routing.id : null,
         };
+
+        if (addressObj.routing?.id && addressObj.routing?.type === 'endpoint') {
+          p.log.info(`Found existing routing for this address, checking endpoint details...`);
+          try {
+            const endpoint = await api.getEndpoint(addressObj.routing.id);
+            if (endpoint.type === 'webhook' && endpoint.config?.url?.includes('webhook.site/')) {
+              const match = endpoint.config.url.match(/webhook\.site\/([a-z0-9-]+)/i);
+              if (match) {
+                tokenId = match[1];
+                webhookUrl = endpoint.config.url;
+                isExistingEndpoint = true;
+                p.log.success(`Found existing webhook.site endpoint for this address: ${webhookUrl}. Listening...`);
+              }
+            }
+          } catch (e: any) {
+            p.log.warn(`Could not fetch details for existing endpoint ${addressObj.routing.id}: ${e.message}. Proceeding to create new endpoint.`);
+          }
+        }
       }
 
       if (!tokenId) {
@@ -242,12 +261,12 @@ program
         });
         endpointId = endpointResponse.id;
         p.log.success('Webhook registered with Inbound.');
-      } else {
+      } else if (!webhookUrl) {
         p.log.info(`Using existing webhook.site token: ${tokenId}`);
         webhookUrl = `https://webhook.site/${tokenId}`;
       }
 
-      if (addressId && endpointId) {
+      if (addressId && endpointId && !isExistingEndpoint) {
         p.log.info(`Updating routing for ${options.address} to point to new webhook...`);
         await api.updateEmailAddress(addressId, { endpointId, webhookId: null });
         p.log.success(`Routing updated successfully.`);
@@ -256,7 +275,7 @@ program
       p.log.info(`Listening for emails (polling every ${options.interval}s). Press Ctrl+C to stop.\n`);
 
       const restoreRouting = async () => {
-        if (addressId && (originalRouting.endpointId !== undefined || originalRouting.webhookId !== undefined)) {
+        if (!isExistingEndpoint && addressId && (originalRouting.endpointId !== undefined || originalRouting.webhookId !== undefined)) {
           p.log.info(`\nRestoring original routing for ${options.address}...`);
           try {
             await api.updateEmailAddress(addressId, originalRouting);
