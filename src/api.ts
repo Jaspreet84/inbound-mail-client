@@ -118,6 +118,20 @@ export class InboundAPI {
     });
     return response.data;
   }
+
+  async listEmailAddresses() {
+    const response = await axios.get(`${API_BASE_URL}/api/e2/email-addresses`, {
+      headers: { Authorization: `Bearer ${this.apiKey}` },
+    });
+    return response.data;
+  }
+
+  async updateEmailAddress(id: string, data: { endpointId?: string | null; webhookId?: string | null; isActive?: boolean }) {
+    const response = await axios.put(`${API_BASE_URL}/api/e2/email-addresses/${id}`, data, {
+      headers: { Authorization: `Bearer ${this.apiKey}` },
+    });
+    return response.data;
+  }
 }
 
 export class WebhookSiteAPI {
