@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { URL } from 'url';
 
-const API_BASE_URL = 'https://inbound.new/api/e2';
+const API_BASE_URL = 'https://inbound.new/api/e2/';
 
 function getProxyConfig(): AxiosProxyConfig | false {
   const proxyUrl = process.env.https_proxy || process.env.HTTPS_PROXY || process.env.http_proxy || process.env.HTTP_PROXY;
@@ -22,10 +22,11 @@ function getProxyConfig(): AxiosProxyConfig | false {
 }
 
 const axiosInstance = axios.create({
-  proxy: getProxyConfig()
+  proxy: getProxyConfig(),
+  maxRedirects: 10
 });
 
-let isVerbose = false;
+let isVerbose = process.env.VERBOSE === 'true';
 export function setVerbose(v: boolean) {
   isVerbose = v;
 }
@@ -92,7 +93,7 @@ export class InboundAPI {
     scheduled_at?: string;
     tags?: Array<{ name: string; value: string }>;
   }) {
-    const response = await axiosInstance.post(`${API_BASE_URL}/emails`, data, {
+    const response = await axiosInstance.post(`${API_BASE_URL}emails`, data, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
     });
     return response.data;
@@ -108,14 +109,14 @@ export class InboundAPI {
     reply_all?: boolean;
     tags?: Array<{ name: string; value: string }>;
   }) {
-    const response = await axiosInstance.post(`${API_BASE_URL}/emails/${id}/reply`, data, {
+    const response = await axiosInstance.post(`${API_BASE_URL}emails/${id}/reply`, data, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
     });
     return response.data;
   }
 
   async downloadAttachment(id: string, filename: string) {
-    const response = await axiosInstance.get(`${API_BASE_URL}/attachments/${id}/${filename}`, {
+    const response = await axiosInstance.get(`${API_BASE_URL}attachments/${id}/${filename}`, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
       responseType: 'arraybuffer',
     });
@@ -133,7 +134,7 @@ export class InboundAPI {
     };
     description?: string;
   }) {
-    const response = await axiosInstance.post(`${API_BASE_URL}/endpoints`, data, {
+    const response = await axiosInstance.post(`${API_BASE_URL}endpoints`, data, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
     });
     return response.data;
@@ -148,7 +149,7 @@ export class InboundAPI {
     limit?: number;
     offset?: number;
   }) {
-    const response = await axiosInstance.get(`${API_BASE_URL}/emails`, {
+    const response = await axiosInstance.get(`${API_BASE_URL}emails`, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
       params,
     });
@@ -162,7 +163,7 @@ export class InboundAPI {
     search?: string;
     unread?: boolean;
   }) {
-    const response = await axiosInstance.get(`${API_BASE_URL}/mail/threads`, {
+    const response = await axiosInstance.get(`${API_BASE_URL}mail/threads`, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
       params,
     });
@@ -170,28 +171,28 @@ export class InboundAPI {
   }
 
   async getEmail(id: string) {
-    const response = await axiosInstance.get(`${API_BASE_URL}/emails/${id}`, {
+    const response = await axiosInstance.get(`${API_BASE_URL}emails/${id}`, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
     });
     return response.data;
   }
 
   async listEmailAddresses() {
-    const response = await axiosInstance.get(`${API_BASE_URL}/email-addresses`, {
+    const response = await axiosInstance.get(`${API_BASE_URL}email-addresses`, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
     });
     return response.data;
   }
 
   async updateEmailAddress(id: string, data: { endpointId?: string | null; webhookId?: string | null; isActive?: boolean }) {
-    const response = await axiosInstance.put(`${API_BASE_URL}/email-addresses/${id}`, data, {
+    const response = await axiosInstance.put(`${API_BASE_URL}email-addresses/${id}`, data, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
     });
     return response.data;
   }
 
   async getEndpoint(id: string) {
-    const response = await axiosInstance.get(`${API_BASE_URL}/endpoints/${id}`, {
+    const response = await axiosInstance.get(`${API_BASE_URL}endpoints/${id}`, {
       headers: { Authorization: `Bearer ${this.apiKey}` },
     });
     return response.data;
