@@ -34,55 +34,94 @@ The CLI requires an API key from `inbound.new`. You can provide it in two ways:
 1.  Create an `api.key` file in the project root containing your key.
 2.  Set the `INBOUND_API_KEY` environment variable.
 
-## Usage
+## Command Reference
 
-### Sending an Email
-```bash
-inbound send \
-  --from "admin@yourdomain.com" \
-  --to "recipient@example.com" \
-  --subject "Hello from CLI" \
-  --text "This is a test email." \
-  -a ./path/to/document.pdf
-```
+The Inbound CLI uses **Options/Flags** (e.g., `--to`) for most inputs and **Positional Arguments** (e.g., `<id>`) only when specified.
 
-### Listing Received Emails
-```bash
-inbound list --address "user@yourdomain.com" --type received
-```
+### 1. `send`
+Send a new email. All recipients must be preceded by their respective flags.
+- **Flags:**
+  - `-f, --from <email>` (**Required**): Verified sender address.
+  - `-t, --to <email...>` (**Required**): One or more recipients.
+  - `-s, --subject <text>` (**Required**): Email subject.
+  - `--cc <email...>`, `--bcc <email...>`, `--reply-to <email...>`: Optional recipient lists.
+  - `--text <text>`, `--html <html>`: Body content.
+  - `-a, --attachment <path...>`: One or more local file paths.
+- **Example:**
+  ```bash
+  inbound send -f admin@velor.pro -t user@gmail.com -s "Hello" --text "Body here"
+  ```
 
-### Downloading an Attachment
-1. Get the email details to find the filename:
-   ```bash
-   inbound get <email_id>
-   ```
-2. Download the file:
-   ```bash
-   inbound download <email_id> <filename> -o ./downloads
-   ```
+### 2. `reply`
+Reply to an existing email thread.
+- **Arguments:** `<id>` (The ID of the email you are replying to).
+- **Flags:**
+  - `-f, --from <email>` (**Required**): Your verified sender address.
+  - `--text <text>`, `--html <html>`, `-a, --attachment <path...>`: Reply content.
+- **Example:**
+  ```bash
+  inbound reply inbnd_12345 -f admin@velor.pro --text "Got it, thanks!"
+  ```
 
-### Replying to a Thread
-```bash
-inbound reply <email_id> --from "admin@yourdomain.com" --text "Thank you for your message."
-```
+### 3. `listen`
+Automated webhook.site integration.
+- **Flags:**
+  - `-a, --address <email>`: Optional. Automatically routes this address to the webhook.
+  - `-t, --token <id>`: Optional. Use an existing webhook.site token.
+  - `-i, --interval <seconds>`: Polling frequency (Default: 10).
+  - `-n, --name <text>`: Name for the Inbound endpoint (Default: "CLI Listener").
+- **Example:**
+  ```bash
+  inbound listen --address jaspreet@velor.pro --interval 5
+  ```
 
-### Creating a Webhook
-```bash
-inbound webhook --url "https://your-api.com/webhook" --filter "subject: urgent"
-```
+### 4. `list`
+List email activity.
+- **Flags:**
+  - `-a, --address <email>`: Filter by a specific email address.
+  - `-t, --type <type>`: `all`, `sent`, `received`, `scheduled` (Default: `all`).
+  - `-s, --search <query>`: Search subject/body.
+  - `-l, --limit <number>`: Results per page (Default: 50).
+- **Example:**
+  ```bash
+  inbound list --address jaspreet@velor.pro --type received
+  ```
 
-## Commands Summary
+### 5. `download`
+Download an attachment to your local machine.
+- **Arguments:** `<id>` (Attachment/Email ID) and `<filename>`.
+- **Flags:**
+  - `-o, --output <path>`: Local directory to save the file (Default: `.`).
+- **Example:**
+  ```bash
+  inbound download inbnd_12345 invoice.pdf -o ./downloads
+  ```
 
-| Command | Description |
-| :--- | :--- |
-| `send` | Send a new email with full support for CC/BCC/Attachments. |
-| `list` | List emails with filtering by type, address, or search. |
-| `get` | Retrieve full JSON details of a specific email. |
-| `threads` | List email threads/conversations. |
-| `reply` | Reply to an existing email thread. |
-| `download` | Download a specific attachment from an email. |
-| `webhook` | Configure a new webhook endpoint. |
-| `listen` | Auto-create a webhook.site, register it, and poll for emails. |
+### 6. `get`
+Fetch the full JSON metadata for a specific email.
+- **Arguments:** `<id>`.
+- **Example:**
+  ```bash
+  inbound get inbnd_12345
+  ```
+
+### 7. `threads`
+List email threads (conversations).
+- **Flags:**
+  - `-a, --address <email>`, `-s, --search <query>`, `-u, --unread`.
+- **Example:**
+  ```bash
+  inbound threads --unread
+  ```
+
+### 8. `webhook`
+Manually create a webhook endpoint.
+- **Flags:**
+  - `-n, --name <text>` (**Required**), `-u, --url <url>` (**Required**).
+- **Example:**
+  ```bash
+  inbound webhook -n "My Server" -u "https://api.myapp.com/webhook"
+  ```
 
 ## Development
 

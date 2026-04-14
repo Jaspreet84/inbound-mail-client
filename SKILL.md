@@ -17,31 +17,36 @@ This skill enables an AI agent to programmatically send, receive, and manage ema
 1.  **API Key**: Ensure an `api.key` file exists in the project root or the `INBOUND_API_KEY` environment variable is set.
 2.  **Tool Availability**: The tool should be built and accessible via `node dist/index.js` or linked as `inbound`.
 
-## Core Capabilities
+## Core Capabilities & Syntax
+
+All commands follow the pattern: `inbound <command> [arguments] [options]`. Options/Flags (like `-t`) are mandatory for most inputs.
 
 ### 1. Sending Emails
-Use the `send` command for new outbound messages.
-- **Commands**: `inbound send -t <to> -f <from> -s <subject> --text <text> --html <html>`
-- **Multiple Recipients**: Use multiple `-t` flags or comma-separated strings.
-- **Attachments**: Pass local file paths using `-a <path>`.
+- **Command**: `inbound send -f <from> -t <to> -s <subject> [options]`
+- **Mandatory Flags**:
+  - `-f, --from`: The verified sender email.
+  - `-t, --to`: One or more recipient emails.
+  - `-s, --subject`: Email subject line.
+- **Example**: `inbound send -f admin@velor.pro -t user@example.com -s "Test"`
 
-### 2. Checking & Listing Messages
-- **List All**: `inbound list --address <email> --type received`
-- **Filtering**: Use `--type sent`, `received`, or `scheduled`.
-- **Threads**: `inbound threads --address <email>` to see grouped conversations.
+### 2. Automated Listening (Webhook.site)
+- **Command**: `inbound listen [options]`
+- **Options**:
+  - `-a, --address <email>`: Link this address to the webhook.
+  - `-i, --interval <seconds>`: Poll frequency (default 10).
+  - `-t, --token <id>`: Use an existing webhook.site token.
+- **Example**: `inbound listen --address user@velor.pro`
 
-### 3. Retrieving & Downloading
-- **Fetch Detail**: `inbound get <id>` (Required to see attachment metadata).
-- **Download**: `inbound download <message_id> <filename> -o <output_dir>`.
+### 3. Checking & Retrieving
+- **List All**: `inbound list -a <email> -t received`
+- **Fetch Metadata**: `inbound get <id>` (Required to see attachment names).
+- **Download**: `inbound download <id> <filename> -o <output_dir>`
+  - *Note*: `<id>` and `<filename>` are positional arguments. Do NOT use flags for them.
 
 ### 4. Replying
-- **Threading**: `inbound reply <id> -f <from> --text <text>`. This maintains the `thread_id` context automatically.
-
-### 5. Automated Listening (Webhook.site)
-- **Listen**: `inbound listen -i <seconds> --filter <filter>`. This command:
-  1. Creates a new unique `webhook.site` URL.
-  2. Registers it as an endpoint with Inbound.
-  3. Polls `webhook.site` for incoming email payloads.
+- **Command**: `inbound reply <id> -f <from> [options]`
+- **Arguments**: `<id>` (Positional).
+- **Mandatory Flags**: `-f, --from`.
 
 ## Operational Rules & Validation
 
