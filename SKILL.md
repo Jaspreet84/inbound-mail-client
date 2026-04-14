@@ -48,6 +48,10 @@ All commands follow the pattern: `inbound <command> [arguments] [options]`. Opti
 - **Arguments**: `<id>` (Positional).
 - **Mandatory Flags**: `-f, --from`.
 
+### 5. Proxy Testing
+- **Command**: `inbound test-proxy`
+- **Purpose**: Verify if `http_proxy` / `https_proxy` are working by attempting to fetch the EICAR malware test file (which should be blocked).
+
 ## Operational Rules & Validation
 
 Based on workspace conventions, agents must adhere to the following validation logic before execution:

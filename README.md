@@ -123,6 +123,13 @@ Manually create a webhook endpoint.
   inbound webhook -n "My Server" -u "https://api.myapp.com/webhook"
   ```
 
+### 9. `test-proxy`
+Verify proxy filtering by fetching a standard malware test file (EICAR).
+- **Example:**
+  ```bash
+  inbound test-proxy
+  ```
+
 ## Development
 
 ```bash

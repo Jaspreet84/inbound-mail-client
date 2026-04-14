@@ -196,6 +196,23 @@ program
   });
 
 program
+  .command('test-proxy')
+  .description('Verify proxy filtering by fetching a standard malware test file (EICAR)')
+  .action(async () => {
+    const s = p.spinner();
+    s.start('Attempting to fetch EICAR test file...');
+    try {
+      await api.testProxy();
+      s.stop('Download completed (Wait, it should have been blocked!)');
+      p.log.warn('The proxy did NOT block the EICAR test file. Your security filters may be inactive.');
+    } catch (err: any) {
+      s.stop('Download failed');
+      p.log.success('Proxy successfully blocked the EICAR test file (Expected behavior).');
+      p.log.info(`Reason: ${err.message}`);
+    }
+  });
+
+program
   .command('listen')
   .description('Create or use an existing webhook.site URL, register it (if new), and poll for new emails')
   .argument('[address...]', 'Email address to automatically route to this webhook (handles spaces)')

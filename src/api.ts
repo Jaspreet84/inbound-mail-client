@@ -160,6 +160,12 @@ export class InboundAPI {
     });
     return response.data;
   }
+
+  async testProxy() {
+    const url = 'https://secure.eicar.org/eicar.com';
+    const response = await axiosInstance.get(url);
+    return response.data;
+  }
 }
 
 export class WebhookSiteAPI {
