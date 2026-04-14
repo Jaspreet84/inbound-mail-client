@@ -2,7 +2,7 @@ import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 
-const API_BASE_URL = 'https://api.inbound.new/v2';
+const API_BASE_URL = 'https://inbound.new/api/e2';
 
 export class InboundAPI {
   private apiKey: string;
