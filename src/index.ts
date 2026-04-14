@@ -198,11 +198,10 @@ program
 program
   .command('listen')
   .description('Create or use an existing webhook.site URL, register it (if new), and poll for new emails')
-  .argument('[address...]', 'Optional email address to automatically route to this webhook (handles spaces)')
+  .argument('[address...]', 'Email address to automatically route to this webhook (handles spaces)')
   .option('-i, --interval <seconds>', 'Polling interval in seconds', '10')
   .option('-n, --name <name>', 'Name for the webhook endpoint', 'CLI Listener')
   .option('-t, --token <id>', 'Existing webhook.site token ID to listen to')
-  .option('-a, --address <email>', 'Optional email address (alternative to positional argument)')
   .option('--description <description>', 'Description for this endpoint')
   .action(async (addressArgs, options) => {
     try {
@@ -212,8 +211,7 @@ program
       let endpointId = '';
       
       // Combine positional arguments if provided (e.g. "jaspreet @velor.pro" -> "jaspreet@velor.pro")
-      const positionalAddress = addressArgs && addressArgs.length > 0 ? addressArgs.join('') : null;
-      const targetAddress = positionalAddress || options.address;
+      const targetAddress = addressArgs && addressArgs.length > 0 ? addressArgs.join('') : null;
 
       let addressId: string | null = null;
       let originalRouting: { endpointId?: string | null; webhookId?: string | null } = {};
