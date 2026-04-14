@@ -48,10 +48,7 @@ export const createClient = (baseURL: string): AxiosInstance => {
       if (config.proxy) {
         console.log(`\x1b[36m[DEBUG] Using Proxy: ${config.proxy.host}:${config.proxy.port}\x1b[0m`);
       }
-      if (config.headers.Authorization) {
-        const auth = config.headers.Authorization.toString();
-        console.log(`\x1b[36m[DEBUG] Auth Header: ${auth.substring(0, 20)}...\x1b[0m`);
-      }
+      console.log(`\x1b[36m[DEBUG] Request Headers: ${JSON.stringify(config.headers, null, 2)}\x1b[0m`);
     }
     return config;
   });
@@ -60,6 +57,7 @@ export const createClient = (baseURL: string): AxiosInstance => {
     response => {
       if (isVerbose) {
         console.log(`\x1b[32m[DEBUG] Response: ${response.status} ${response.config.url}\x1b[0m`);
+        console.log(`\x1b[32m[DEBUG] Response Headers: ${JSON.stringify(response.headers, null, 2)}\x1b[0m`);
       }
       return response;
     },
@@ -67,6 +65,7 @@ export const createClient = (baseURL: string): AxiosInstance => {
       if (isVerbose) {
         if (error.response) {
           console.log(`\x1b[31m[DEBUG] Error Response: ${error.response.status} ${error.config.url}\x1b[0m`);
+          console.log(`\x1b[31m[DEBUG] Error Response Headers: ${JSON.stringify(error.response.headers, null, 2)}\x1b[0m`);
           if (error.response.headers.location) {
             console.log(`\x1b[33m[DEBUG] Redirect Location: ${error.response.headers.location}\x1b[0m`);
           }
