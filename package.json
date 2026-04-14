@@ -1,0 +1,24 @@
+{
+  "name": "inbound",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "inbound": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/index.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "@clack/prompts": "^1.2.0",
+    "axios": "^1.8.0"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.0",
+    "tsx": "^4.0.0",
+    "vitest": "^4.0.0",
+    "@types/node": "^25.0.0"
+  }
+}

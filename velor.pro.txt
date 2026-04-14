@@ -1,0 +1,43 @@
+; Zone: velor.pro.
+; Exported  (yyyy-mm-ddThh:mm:ss.sssZ): 2026-04-14T18:46:43.136Z
+
+$ORIGIN velor.pro.
+$TTL 3600
+
+; SOA Record
+@	 		IN	SOA	ns1.inbound.new.	admin.velor.pro.	(
+1776192403	 ;serial
+3600	 ;refresh
+600	 ;retry
+604800	 ;expire
+86400	 ;minimum ttl
+)
+
+; NS Records
+
+; MX Records
+@	IN	MX	10	inbound-smtp.us-east-2.amazonaws.com.
+mail	IN	MX	10	feedback-smtp.us-east-2.amazonses.com.
+
+; A Records
+
+; AAAA Records
+
+; CNAME Records
+
+; PTR Records
+
+; TXT Records
+_amazonses	IN	TXT	"4s3R1zNOpeMbsVE1aC+cpUNvWowRGOnxdwMEi7r2q3w="
+mail	IN	TXT	"v=spf1 include:amazonses.com ~all"
+@	IN	TXT	"v=spf1 include:amazonses.com ~all"
+_dmarc	IN	TXT	"v=DMARC1; p=none; rua=mailto:dmarc@velor.pro; ruf=mailto:dmarc@velor.pro; fo=1; aspf=r; adkim=r"
+
+; SRV Records
+
+; SPF Records
+
+; CAA Records
+
+; DS Records
+
