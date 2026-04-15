@@ -2,7 +2,7 @@
 import { Command } from 'commander';
 import { InboundAPI } from './api/inbound.js';
 import { WebhookSiteAPI } from './api/webhook-site.js';
-import { setVerbose, setUseProxy } from './api/client.js';
+import { setVerbose, setUseProxy, setSecure } from './api/client.js';
 
 // Import command registers
 import { registerSend } from './commands/send.js';
@@ -24,9 +24,13 @@ program
   .description('AI-first tool for sending and receiving emails')
   .version('1.0.0')
   .option('-v, --verbose', 'Verbose output (for debugging API calls)')
+  .option('--secure', 'Enable TLS certificate validation (disabled by default)')
   .option('--no-proxy', 'Disable using system proxy environment variables')
   .on('option:verbose', () => {
     setVerbose(true);
+  })
+  .on('option:secure', () => {
+    setSecure(true);
   })
   .on('option:no-proxy', () => {
     setUseProxy(false);

@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { URL } from 'url';
 import { HttpProxyAgent, HttpsProxyAgent } from 'hpagent';
+import { Agent as HttpsAgent } from 'https';
 
 let isVerbose = process.env.VERBOSE === 'true';
 export function setVerbose(v: boolean) {
@@ -10,6 +11,11 @@ export function setVerbose(v: boolean) {
 let useProxy = process.env.NO_PROXY !== 'true';
 export function setUseProxy(v: boolean) {
   useProxy = v;
+}
+
+let isSecure = process.env.SECURE === 'true';
+export function setSecure(v: boolean) {
+  isSecure = v;
 }
 
 function getProxyUrl(): string | undefined {
@@ -22,7 +28,9 @@ export const createClient = (baseURL: string): AxiosInstance => {
   
   // Use hpagent for robust CONNECT tunneling
   const httpAgent = proxyUrl ? new HttpProxyAgent({ proxy: proxyUrl, keepAlive: true }) : undefined;
-  const httpsAgent = proxyUrl ? new HttpsProxyAgent({ proxy: proxyUrl, keepAlive: true }) : undefined;
+  const httpsAgent = proxyUrl 
+    ? new HttpsProxyAgent({ proxy: proxyUrl, keepAlive: true, rejectUnauthorized: isSecure }) 
+    : (isSecure ? undefined : new HttpsAgent({ rejectUnauthorized: false }));
 
   const instance = axios.create({
     baseURL,
